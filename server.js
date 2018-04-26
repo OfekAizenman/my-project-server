@@ -1,29 +1,66 @@
+// const express = require('express');
+// const MongoClient = require('mongodb').MongoClient;
+
+// const app = express();
+
+// // Environments
+// var env = process.env.NODE_ENV || 'development';
+// var envConfig = require('./config/env')[env];
+
+// // Express configuration
+// require('./config/config')(app);
+
+// // Routes
+// //require('./app/routes')(app);
+
+// MongoClient.connect(envConfig.database, (err, database) => {
+//   if (err) return console.log(err)
+  
+//   require('./app/routes')(app, database);
+
+//   app.listen(envConfig.port, () => {
+//     console.log('We are live on ' + envConfig.port);
+//   });               
+// });
+
+'use strict';
+
+const fs = require('fs');
+const join = require('path').join;
 const express = require('express');
+const mongoose = require('mongoose');
 const MongoClient = require('mongodb').MongoClient;
-const bodyParser = require('body-parser');
-const db = require('./config/db');
-const cors = require('cors');
 
 const app = express();
 
-const port = 8000;
+
+// Environments
+var env = process.env.NODE_ENV || 'development';
+var envConfig = require('./config/env')[env];
 
 
-const corsOptions = {
-  origin: ['http://localhost:8080'],
-  credentials: true,
-};
+// Register models
+const models = join(envConfig.rootPath, 'app/models');
+fs.readdirSync(models)
+  .filter(file => ~file.search(/^[^\.].*\.js$/))
+  .forEach(file => require(join(models, file)));
 
-app.use(cors(corsOptions));
 
-app.use(bodyParser.json()) // handle json data
-app.use(bodyParser.urlencoded({ extended: true })) // handle URL-encoded data
+// Express configuration
+require('./config/config')(app);
 
-MongoClient.connect(db.url, (err, database) => {
-  if (err) return console.log(err)
-  require('./app/routes')(app, database);
-  
-  app.listen(port, () => {
-    console.log('We are live on ' + port);
-  });               
-});
+
+// Routes
+require('./app/routes')(app);
+
+
+mongoose.connect(envConfig.database).then(
+  () => listen(),
+  err => console.log(err)
+);
+
+function listen () {
+  if (app.get('env') === 'test') return;
+  app.listen(envConfig.port);
+  console.log('Express app started on port ' + envConfig.port);
+}
