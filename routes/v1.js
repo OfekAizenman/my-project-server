@@ -3,6 +3,7 @@ const router = express.Router();
 
 const UserController = require('./../controllers/UserController');
 const NoteController = require('./../controllers/NoteController');
+const CodeController = require('./../controllers/CodeController');
 
 const passport = require('passport');
 const path = require('path');
@@ -25,7 +26,7 @@ router.post('/users', UserController.create); // C
 router.get('/users', passport.authenticate('jwt', { session: false }), UserController.get); // R
 router.put('/users', passport.authenticate('jwt', { session: false }), UserController.update); // U
 router.delete('/users', passport.authenticate('jwt', { session: false }), UserController.remove); // D
-router.post('/users/login', UserController.login);
+router.post('/users/signin', UserController.login);
 
 
 // Notes routes
@@ -34,6 +35,10 @@ router.get('/notes', passport.authenticate('jwt', { session: false }), NoteContr
 router.get('/notes/:note_id', passport.authenticate('jwt', { session: false }), NoteController.get); // R
 //router.put('/notes/:note_id', passport.authenticate('jwt', { session: false }), NoteController.update); // U
 router.delete('/notes/:note_id', passport.authenticate('jwt', { session: false }), NoteController.remove); // D
+
+
+// Code routes
+router.get('/codes/colors', passport.authenticate('jwt', { session: false }), CodeController.getAllColors);
 
 
 module.exports = router;

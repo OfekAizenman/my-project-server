@@ -1,9 +1,23 @@
 const mongoose = require('mongoose');
 
 const NoteSchema = new mongoose.Schema({
-    title: { type: String },
-    description: { type: String },
-    archive: { type: Boolean },
+  title: { type: String },
+  description: { type: String },
+  archive: { type: Boolean },
+  color_id: { type: String },
+}, {
+  toJSON: {virtuals: true},
+});
+
+NoteSchema.virtual('color', {
+  ref: 'Color',
+  localField: 'color_id',
+  foreignField: 'id',
+  justOne: true,
+});
+
+NoteSchema.pre('find', function() {
+  this.populate('color');
 });
 
 NoteSchema.methods.toWeb = function () {
